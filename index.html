@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real-time Multiplayer Game</title>
+    <script src="https://cdn.socket.io/4.0.1/socket.io.min.js"></script>
+    <style>
+        canvas { background: black; display: block; margin: auto; }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas" width="600" height="400"></canvas>
+
+    <script>
+        const socket = io("http://localhost:3000");
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+
+        let players = {};
+
+        socket.on("updatePlayers", (data) => {
+            players = data;
+            drawGame();
+        });
+
+        function drawGame() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            for (let id in players) {
+                let player = players[id];
+
+                // Draw main box
+                ctx.fillStyle = player.color;
+                ctx.fillRect(player.x, player.y, 20, 20);
+
+                // Draw player name
+                ctx.fillStyle = "white";
+                ctx.font = "10px Arial";
+                ctx.fillText(player.name, player.x, player.y - 5);
+
+                // Draw trail (attached boxes)
+                for (let part of player.trail) {
+                    ctx.fillStyle = part.color;
+                    ctx.fillRect(part.x, part.y, 20, 20);
+                }
+            }
+        }
+
+        window.addEventListener("keydown", (e) => {
+            let dx = 0, dy = 0;
+            if (e.key === "ArrowUp") dy = -20;
+            if (e.key === "ArrowDown") dy = 20;
+            if (e.key === "ArrowLeft") dx = -20;
+            if (e.key === "ArrowRight") dx = 20;
+            socket.emit("move", { dx, dy });
+        });
+    </script>
+</body>
+</html>
