@@ -10,6 +10,12 @@ const io = new Server(server, {
   },
 });
 
+// Add this route to fix "Cannot GET /" error
+app.get("/", (req, res) => {
+  res.send("Server is running! WebSocket is ready.");
+});
+
+
 const getRandomColor = () => {
   const letters = "0123456789ABCDEF";
   let color = "#";
